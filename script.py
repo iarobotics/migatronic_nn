@@ -1,72 +1,3 @@
-import matplotlib
-import matplotlib.pyplot as plt
-# import matplotlib.mlab as mlab
-# from matplotlib import colors
-import numpy as np
-
-def plot():
-    #[1011, 1005, 1000, 992]
-    # x axis values
-    x = time_list
-    # corresponding y axis values
-
-    y1 = current_list
-    y2 = voltage_list
-    y3 = short_list
-
-    # plotting the line 1 points
-    plt.plot(x, y1, label = "Measured current")
-
-    # line 2 points
-    # plotting the line 2 points
-    plt.plot(x, y2, label = "Measured Voltage")
-
-    # line 2 points
-    # plotting the line 2 points
-    plt.plot(x, y3, label = "Short-circuit")
-
-    # naming the x axis
-    plt.xlabel('time (s)')
-    # naming the y axis
-    plt.ylabel('y - axis')
-    # giving a title to my graph
-    plt.title('Two lines on same graph!')
-
-    # show a legend on the plot
-    plt.legend()
-
-    # function to show the plot
-    plt.show()
-
-def separate_short(lines):
-    current_list = []
-    voltage_list = []
-    short_list = []
-    ref_list = []
-    for line in lines:
-        current, voltage, isShort, reference = line.split()
-        current_list.append(float(current))
-        voltage_list.append(float(voltage))
-        short_list.append(int(isShort)*1000)
-        ref_list.append(float(reference))
-
-        if int(isShort) == 1:
-            with open("data/short.txt", "a") as outfile:
-                outfile.write(line+'\n')
-        else:
-            with open("data/non_short.txt", "a") as outfile:
-                outfile.write(line+'\n')
-
-def join_data(fname_list: None):
-    content = []
-    for fname in fname_list:
-        with open(fname) as f:
-            lines = f.readlines()
-            content.extend(lines[50000:])
-
-    with open("data/data_joined_mod.txt", "a") as outfile:
-        outfile.writelines(content)
-
 
 def extract_data_lists(lines):
 
@@ -108,7 +39,6 @@ def extract_data_lists(lines):
 
     return current_list, voltage_list, arc_list, ref_current_list, idx_tuples
 
-
 def get_short_sample_avg(idx_tuples):
     size_dict = {}
     for start, end in idx_tuples:
@@ -144,51 +74,6 @@ def get_short_sample_avg_range(idx_tuples):
     for key in sorted(size_dict.keys()):
         print("{} : {}".format(key, size_dict[key]))
 
-def modify_content(content: None, fname: str):
-    idx_tuples = get_short_index(content)
-    start, end = idx_tuples[0]
-    cut = int((end-start)*0.9)
-
-    for start, end in idx_tuples:
-        for line in content[start+cut:end]:
-            #print("OLD: {}".format(line))
-            x = line.strip()
-            current, voltage, isShort, reference = x.split()
-            isShort = 0
-            idx = content.index(line)
-            content[idx] = "{}\t{}\t{}\t{}\n".format(current, voltage, isShort, reference)
-            #print("NEW: {}".format(content[idx]))
-
-    with open(fname, "w") as outfile:
-        outfile.writelines(content)
-
-def plot_histogram_2(size_dict):
-
-    #x = size_dict.keys()
-    x = np.arrange(10)
-    plt.hist(x, bins=30)
-    # plt.bar(x, height= [1,2,3])
-    # plt.xticks(x, ['a','b','c'])
-
-    plt.show()
-
-def plot_histogram():
-    # Needs work
-    #bins = sorted(size_dict.keys())
-    bins = [10, 50, 100, 150, 300, 700]
-
-    x = size_list
-    hist, bins = np.histogram(x, bins=bins)
-    width = np.diff(bins)
-    center = (bins[:-1] + bins[1:]) / 2
-
-    fig, ax = plt.subplots(figsize=(8,3))
-    ax.bar(center, hist, align='center', width=width)
-    ax.set_xticks(bins)
-    fig.savefig("out.png")
-
-    plt.show()
-
 
 fname_list = [
     'data/data_1.txt',
@@ -221,12 +106,15 @@ with open("data/data_joined_final.txt", "w") as f_joined:
                 arc_list_mod[idx] = 0
                 idx += 1
 
-        #plt.figure(1)
-        #plt.plot(arc_list, 'g')
-        #plt.plot(voltage_list, 'b')
-        #plt.plot(current_list, 'r')
-        #plt.plot(arc_list_mod, 'y')
-        #plt.show()
+        # import matplotlib
+        # import matplotlib.pyplot as plt
+        # plt.figure(1)
+        # plt.plot(arc_list, 'g')
+        # plt.plot(voltage_list, 'b')
+        # plt.plot(current_list, 'r')
+        # plt.plot(arc_list_mod, 'y')
+        # plt.legend()
+        # plt.show()
 
         outfile_name = fname[:-4]+"_final.txt"
 
