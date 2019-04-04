@@ -1,4 +1,6 @@
 
+import math
+
 def extract_data_lists(lines):
 
     current_list = []
@@ -75,6 +77,18 @@ def get_short_sample_avg_range(idx_tuples):
         print("{} : {}".format(key, size_dict[key]))
 
 
+def plot_data(arc_list, voltage_list, current_list, arc_list_mod):
+    import matplotlib
+    import matplotlib.pyplot as plt
+    plt.figure(1)
+    plt.plot(arc_list, 'g')
+    plt.plot(voltage_list, 'b')
+    plt.plot(current_list, 'r')
+    plt.plot(arc_list_mod, 'y')
+    plt.legend()
+    plt.show()
+
+
 fname_list = [
     'data/data_1.txt',
     'data/data_2.txt',
@@ -87,7 +101,7 @@ fname_list_mod = [
     'data/data_3_final.txt',
     'data/data_4_final.txt']
 
-with open("data/data_joined_final.txt", "w") as f_joined:
+with open("data/data_joined_cut_first_90p.txt", "w") as f_joined:
 
     for fname in fname_list:
         ## Open data file
@@ -106,19 +120,17 @@ with open("data/data_joined_final.txt", "w") as f_joined:
                 arc_list_mod[idx] = 0
                 idx += 1
 
-        # import matplotlib
-        # import matplotlib.pyplot as plt
-        # plt.figure(1)
-        # plt.plot(arc_list, 'g')
-        # plt.plot(voltage_list, 'b')
-        # plt.plot(current_list, 'r')
-        # plt.plot(arc_list_mod, 'y')
-        # plt.legend()
-        # plt.show()
+        cut_region = arc_list.copy()
+        for start, end in idx_tuples:
+            cut = math.ceil((end-start)*0.1)
+            idx = start
+            while idx <= end-cut:
+                cut_region[idx] = 0
+                idx += 1
 
-        outfile_name = fname[:-4]+"_final.txt"
-
-        with open(outfile_name, "w") as outfile:
+        ## Generate an arc with the last 10% samples set to 0 (non-arc)
+        outfile_name = fname[:-4]+"_cut_last_10p.txt"
+        with open(outfile_name, "w") as outfile_last_10p:
             for idx in range(len(current_list)):
                 line = "{}\t{}\t{}\t{}\n".format(
                     current_list[idx],
@@ -126,5 +138,17 @@ with open("data/data_joined_final.txt", "w") as f_joined:
                     arc_list_mod[idx],
                     ref_current_list[idx])
 
-                outfile.write(line)
+                outfile_last_10p.write(line)
+
+        ## Generate an arc with the first 90% samples set to 0 (non-arc)
+        outfile_name = fname[:-4]+"_cut_first_90p.txt"
+        with open(outfile_name, "w") as outfile_first_90p:
+            for idx in range(len(current_list)):
+                line = "{}\t{}\t{}\t{}\n".format(
+                    current_list[idx],
+                    voltage_list[idx],
+                    cut_region[idx],
+                    ref_current_list[idx])
+
+                outfile_first_90p.write(line)
                 f_joined.write(line)
