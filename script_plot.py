@@ -111,14 +111,26 @@ fname_list_cut_last_10p = [
 
 
 ## Open data file
-#with open(fname_list[0]) as f:
+with open(fname_list[2]) as f:
 #with open(fname_list_cut_first_90p[0]) as f:
-with open(fname_list_cut_last_10p[0]) as f:
+#with open(fname_list_cut_last_10p[0]) as f:
     content = f.readlines()
 
-content = content[50000:55000]
+with open('data/predictor.csv') as pred:
+#with open(fname_list_cut_first_90p[0]) as f:
+#with open(fname_list_cut_last_10p[0]) as f:
+    predicted_arc = pred.readlines()
 
-current_list, voltage_list, arc_list, ref_current_list, idx_tuples = extract_data_lists(content, scale_arc=True)
+predicted_arc_list = []
+for line in predicted_arc:
+    x = line.strip()
+    predicted_arc_list.append(int(x)*300)
+
+
+#content = content[50000:55000]
+#predicted_arc_list = predicted_arc_list[:5000]
+
+current_list, voltage_list, arc_list, ref_current_list, idx_tuples = extract_data_lists(content, scale_arc=False)
 
 arc_list_mod = arc_list.copy()
 for start, end in idx_tuples:
@@ -144,8 +156,9 @@ import matplotlib.pyplot as plt
 plt.figure(1)
 #plt.plot(current_list, 'y')
 plt.plot(arc_list, 'y')
-plt.plot(voltage_list, 'b')
-#plt.plot(arc_list_mod, 'g')
-#plt.plot(cut_region, 'r')
+plt.plot(predicted_arc, 'r')
+#plt.plot(voltage_list, 'b')
+# #plt.plot(arc_list_mod, 'g')
+plt.plot(cut_region, 'b')
 plt.legend()
 plt.show()
