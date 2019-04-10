@@ -1,6 +1,49 @@
 
 import math
 
+def extract_data_lists_old(lines):
+
+    current_list = []
+    voltage_list = []
+    arc_list = []
+    ref_current_list = []
+
+    idx_tuples = []
+    short = False
+    start = 0
+
+    idx = 0
+    for line in lines:
+        x = line.strip()
+        current, voltage, isShort, reference = x.split()
+
+        current_list.append(int(current))
+        voltage_list.append(int(voltage))
+        #arc_list.append(int(isShort)*300)
+        arc_list.append(int(isShort))
+        ref_current_list.append(int(reference))
+
+        if int(isShort):
+            short = True
+            if start == 0:
+                #start = lines.index(line)
+                start = idx
+                #print('Got START idx: {}'.format(start))
+        else:
+            if short:
+                #end = lines.index(line)
+                end = idx
+                #print('Got END idx: {}'.format(end))
+                #print('Sample len idx: {}'.format(end-start))
+
+                idx_tuples.append((start, end))
+                short = False
+                start = 0
+            else:
+                pass
+
+    return current_list, voltage_list, arc_list, ref_current_list, idx_tuples
+
 def extract_data_lists(lines):
 
     current_list = []
@@ -12,27 +55,22 @@ def extract_data_lists(lines):
     short = False
     start = 0
 
-    for line in lines:
+    for idx, line in enumerate(lines):
         x = line.strip()
         current, voltage, isShort, reference = x.split()
 
         current_list.append(int(current))
         voltage_list.append(int(voltage))
-        #arc_list.append(int(isShort)*300)
         arc_list.append(int(isShort))
         ref_current_list.append(int(reference))
 
-        if int(isShort) == 1:
+        if int(isShort):
             short = True
             if start == 0:
-                start = lines.index(line)
-                #print('Got START idx: {}'.format(start))
+                start = idx
         else:
             if short:
-                end = lines.index(line)
-                #print('Got END idx: {}'.format(end))
-                #print('Sample len idx: {}'.format(end-start))
-
+                end = idx
                 idx_tuples.append((start, end))
                 short = False
                 start = 0
@@ -108,13 +146,14 @@ with open("data/data_joined_cut_first_90p.txt", "w") as f_joined:
 
         cut_region = arc_list.copy()
         for start, end in idx_tuples:
-            if end - start <= 15:
+            if end - start <= 10:
                 continue
-            cut = math.ceil((end-start)*0.1)
-            idx = start
-            while idx <= end-cut:
-                cut_region[idx] = 0
-                idx += 1
+            else:
+                cut = math.ceil((end-start)*0.2)
+                idx = start
+                while idx < end-cut:
+                    cut_region[idx] = 0
+                    idx += 1
 
         ## Generate an arc with the first 90% samples set to 0 (non-arc)
         outfile_name = fname[:-4]+"_cut_first_90p.txt"
