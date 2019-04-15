@@ -66,7 +66,7 @@ model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy']
 
 
 # Fit the model
-model.fit(X, y, epochs=5, batch_size=10)
+model.fit(X, y, epochs=2, batch_size=10)
 
 model.save_weights("model/weights.h5")
 model.save("model/model.h5")
